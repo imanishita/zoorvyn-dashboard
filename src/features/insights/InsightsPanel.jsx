@@ -48,15 +48,16 @@ export default function InsightsPanel() {
     const monthlyComparison =
       previousExpense > 0 ? ((currentExpense - previousExpense) / previousExpense) * 100 : 0;
 
+    const topCategoryShare = highestCategory && totalExpense > 0 ? (highestCategory[1] / totalExpense) * 100 : 0;
     let simpleInsight = 'Track expenses for a second month to unlock monthly comparison.';
     if (highestCategory && previousExpense > 0) {
       const direction = monthlyComparison >= 0 ? 'more' : 'less';
-      simpleInsight = `You spent ${Math.abs(monthlyComparison).toFixed(0)}% ${direction} this month, mostly on ${highestCategory[0]}.`;
+      simpleInsight = `You spent ${Math.abs(monthlyComparison).toFixed(0)}% ${direction} this month. ${highestCategory[0]} alone is ${topCategoryShare.toFixed(0)}% of total expenses.`;
     } else if (highestCategory) {
-      simpleInsight = `Top spending category is ${highestCategory[0]}. Watch this bucket closely next month.`;
+      simpleInsight = `Top spending category is ${highestCategory[0]} (${topCategoryShare.toFixed(0)}% of your expense mix).`;
     }
 
-    return { totalIncome, totalExpense, highestCategory, largestExpense, savingsRate, monthlyComparison, simpleInsight };
+    return { totalIncome, totalExpense, highestCategory, largestExpense, savingsRate, monthlyComparison, simpleInsight, topCategoryShare };
   }, [transactions]);
 
   if (!insights) {

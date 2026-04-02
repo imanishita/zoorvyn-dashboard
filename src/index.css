@@ -12,7 +12,28 @@
   }
 }
 
+@keyframes bg-gradient-drift {
+  0%,
+  100% {
+    transform: translate(0%, 0%) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate(3%, -2%) rotate(2deg) scale(1.03);
+  }
+  66% {
+    transform: translate(-2%, 3%) rotate(-1deg) scale(0.98);
+  }
+}
+
 @layer utilities {
+  .animate-bg-drift {
+    animation: bg-gradient-drift 28s ease-in-out infinite;
+  }
+
+  .animate-bg-drift-slow {
+    animation: bg-gradient-drift 38s ease-in-out infinite reverse;
+  }
+
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm dark:bg-dark-card/70 dark:border-white/10 dark:shadow-none;
   }
