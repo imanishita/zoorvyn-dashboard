@@ -1,13 +1,16 @@
-import { Moon, Sun, LayoutDashboard, ArrowLeftRight, PieChart, ChevronDown, LogOut } from 'lucide-react';
+import { Moon, Sun, LayoutDashboard, ArrowLeftRight, PieChart, ChevronDown, LogOut, Shield, Eye } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useRole } from '../context/RoleContext';
+import { useToast } from '../context/ToastContext';
 import { cn } from '../utils/cn';
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 
 export function Layout({ children, currentTab, setCurrentTab }) {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { role, toggleRole, isAdmin, toastMessage } = useRole();
+  const { role, toggleRole, isAdmin } = useRole();
+  const { toast, showToast } = useToast();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -32,21 +35,24 @@ export function Layout({ children, currentTab, setCurrentTab }) {
       {/* Navbar */}
       <header className="sticky top-0 z-50 glass border-b border-gray-200 dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 justify-between items-center">
+          <div className="flex h-16 justify-between items-center gap-2">
             {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
                 <span className="text-white font-bold text-xl">Z</span>
               </div>
-              <span className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Zoorvyn</span>
+              <span className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Zoorvyn</span>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Theme Toggle */}
               <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-dark-card transition-colors"
+                onClick={() => {
+                  toggleTheme();
+                  showToast(isDarkMode ? 'Light mode enabled' : 'Dark mode enabled');
+                }}
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-dark-card transition-all duration-200 hover:scale-105"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -56,13 +62,13 @@ export function Layout({ children, currentTab, setCurrentTab }) {
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-gray-200 dark:border-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-2 pl-1 pr-2 sm:pr-3 py-1 rounded-full border border-gray-200 dark:border-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold">
                     M
                   </div>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Manishita</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <span className="hidden sm:inline text-sm font-medium text-slate-700 dark:text-slate-200">Manishita</span>
+                  <ChevronDown className="hidden sm:block w-4 h-4 text-gray-400" />
                 </button>
 
                 <AnimatePresence>
@@ -85,6 +91,7 @@ export function Layout({ children, currentTab, setCurrentTab }) {
                         <button
                           onClick={() => {
                             toggleRole();
+                            showToast(isAdmin ? 'Viewer mode enabled' : 'Switched to Admin mode');
                             setIsDropdownOpen(false);
                           }}
                           className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center gap-3"
@@ -110,7 +117,7 @@ export function Layout({ children, currentTab, setCurrentTab }) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow py-8 flex flex-col md:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow py-6 sm:py-8 flex flex-col md:flex-row gap-6 sm:gap-8">
         {/* Sidebar Navigation */}
         <nav className="flex md:flex-col gap-2 overflow-x-auto pb-4 md:pb-0 md:w-64 flex-shrink-0">
           {navItems.map((item) => (
@@ -132,20 +139,38 @@ export function Layout({ children, currentTab, setCurrentTab }) {
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">
+          <div className="mb-4 flex justify-end">
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
+                isAdmin
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-200'
+              )}
+            >
+              {isAdmin ? <Shield className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              {role}
+            </span>
+          </div>
           {children}
         </main>
       </div>
       
       {/* Toast Notification */}
       <AnimatePresence>
-        {toastMessage && (
+        {toast && (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-lg border text-sm font-semibold tracking-wide backdrop-blur-md transition-colors border-white/20 dark:border-white/10 bg-white/80 text-slate-900 dark:bg-slate-800/80 dark:text-white"
+            className={cn(
+              'fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[100] max-w-[92vw] sm:max-w-none px-4 sm:px-6 py-3 rounded-full shadow-lg border text-xs sm:text-sm font-semibold tracking-wide backdrop-blur-md transition-colors text-center',
+              toast.type === 'success' && 'border-emerald-200/80 bg-emerald-50/90 text-emerald-700 dark:border-emerald-800/80 dark:bg-emerald-900/70 dark:text-emerald-100',
+              toast.type === 'error' && 'border-red-200/80 bg-red-50/90 text-red-700 dark:border-red-800/80 dark:bg-red-900/70 dark:text-red-100',
+              toast.type === 'info' && 'border-white/20 dark:border-white/10 bg-white/80 text-slate-900 dark:bg-slate-800/80 dark:text-white'
+            )}
           >
-            {toastMessage}
+            {toast.message}
           </motion.div>
         )}
       </AnimatePresence>

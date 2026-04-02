@@ -1,30 +1,24 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const RoleContext = createContext();
 
 export function RoleProvider({ children }) {
-  const [role, setRole] = useState('Viewer'); // 'Viewer' | 'Admin'
-  const [toastMessage, setToastMessage] = useState(null);
+  const [role, setRole] = useState(() => localStorage.getItem('finance-dashboard-role') || 'Viewer');
 
-  const toggleRole = () => {
-    setRole(prev => {
-      const newRole = prev === 'Viewer' ? 'Admin' : 'Viewer';
-      
-      const msg = newRole === 'Admin' ? 'Switched to Admin Mode' : 'Viewer mode enabled';
-      setToastMessage(msg);
-      setTimeout(() => setToastMessage((current) => current === msg ? null : current), 3000);
-      
-      return newRole;
-    });
-  };
+  useEffect(() => {
+    localStorage.setItem('finance-dashboard-role', role);
+  }, [role]);
+
+  const toggleRole = () => setRole((prev) => (prev === 'Viewer' ? 'Admin' : 'Viewer'));
 
   const isAdmin = role === 'Admin';
 
   return (
-    <RoleContext.Provider value={{ role, setRole, toggleRole, isAdmin, toastMessage }}>
+    <RoleContext.Provider value={{ role, setRole, toggleRole, isAdmin }}>
       {children}
     </RoleContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useRole = () => useContext(RoleContext);

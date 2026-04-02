@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { CATEGORIES } from '../../data/mockData';
 import { X } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function TransactionModal({ isOpen, initialData, onClose }) {
+export default function TransactionModal({ initialData, onClose }) {
   const { addTransaction, editTransaction } = useTransactions();
   
   const [formData, setFormData] = useState({

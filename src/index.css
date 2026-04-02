@@ -16,4 +16,28 @@
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm dark:bg-dark-card/70 dark:border-white/10 dark:shadow-none;
   }
+
+  .cool-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+
+  .cool-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .cool-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+  }
+
+  .cool-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.5), rgba(56, 189, 248, 0.45));
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .cool-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.75), rgba(56, 189, 248, 0.65));
+  }
 }

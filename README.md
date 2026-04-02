@@ -39,7 +39,7 @@
 
 ## Overview
 
-Zoorvyn Dashboard is a single-page financial management application that combines clean architecture with premium UI/UX decisions. It demonstrates real-world frontend engineering patterns — Role-Based Access Control, dynamic data visualization, persistent state, and fluid micro-animations — packaged in a polished glassmorphism interface with full Dark Mode support.
+Zoorvyn Dashboard is a single-page financial management application that combines clean architecture with premium UI/UX decisions. It demonstrates real-world frontend engineering patterns — role-based UI, dynamic charts, local persistence, reusable context-driven state, and polished micro-interactions — packaged in a glassmorphism interface with full Dark Mode support.
 
 ---
 
@@ -47,22 +47,24 @@ Zoorvyn Dashboard is a single-page financial management application that combine
 
 | Feature | Description |
 |---|---|
-| **Dashboard Overview** | Displays total balance, income, and expenses. Includes a Cash Flow Trend line chart and Spending Breakdown donut chart powered by Recharts. |
-| **Transactions Management** | Full search, filter, and sort functionality across all transactions with a clean, scannable table layout. |
-| **Role-Based UI (RBAC)** | Toggle between `Viewer` (read-only) and `Admin` mode. Only Admins can add, edit, or delete transactions — no backend needed. |
-| **Insights Engine** | Dynamically calculates savings rate, highest spending category, and largest single expense from live transaction data. |
-| **Data Persistence** | Transactions and Dark Mode preference are synced to `localStorage` — state survives page reloads. |
-| **Dark / Light Mode** | Fully themed across every component, with smooth transitions and persistent preference. |
-| **Animations** | Framer Motion powers page transitions and modal mounts, giving the app a polished, premium feel. |
+| **Dashboard Overview** | Gradient summary cards with visual hierarchy (Balance emphasized), semantic color coding, and enhanced spacing/hover states. |
+| **Charts (Recharts)** | `Line`: Balance over time (cumulative trend). `Pie`: Expense category breakdown with custom scrollable legend. |
+| **Transactions Management** | Search, filter (`All/Income/Expense` + category), sort (`date/amount`), highlighted rows, and admin-only edit/delete actions. |
+| **Role-Based UI (RBAC)** | Toggle between `Viewer` (read-only) and `Admin` modes. Admin can add/edit/delete; Viewer can explore data safely. |
+| **Insights Engine** | Computes top spending category, monthly comparison (%), savings rate, and a human-readable insight sentence. |
+| **Toasts / Snackbar** | Global feedback on key actions (`Transaction added/updated/deleted`, role changes, theme toggles). |
+| **Persistence** | Transactions, theme, and role are synced to `localStorage` so the experience persists across reloads. |
+| **Dark / Light Mode** | Fully themed UI with smooth transitions and persistent user preference. |
+| **Motion & UX Polish** | Framer Motion transitions for tab content, dropdowns, modals, and toast animations. |
 
 ---
 
 ## Tech Stack
 
 ```
-React 18          → UI framework (via Vite for fast HMR)
+React 19          → UI framework (via Vite for fast HMR)
 Tailwind CSS      → Utility-first styling
-Recharts          → Data visualization (line chart, donut chart)
+Recharts          → Data visualization (line and donut charts)
 Framer Motion     → Page transitions & micro-animations
 Lucide React      → Icon library
 React Context API → Global state management
@@ -97,15 +99,14 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ```
 src/
-├── assets/           # Static assets
-├── components/       # Reusable UI elements (Layout, Navbar, etc.)
-├── context/          # Global state — ThemeContext, RoleContext, TransactionContext
-├── data/             # mockData.js — seeds the app on first launch
+├── components/       # Reusable shell UI (Layout, AnimatedBackground, etc.)
+├── context/          # ThemeContext, RoleContext, TransactionContext, ToastContext
+├── data/             # mockData.js — bootstrap seed data
 ├── features/
-│   ├── dashboard/    # Balance cards, Cash Flow chart, Spending chart
-│   ├── transactions/ # Transaction table, search, filter, sort, CRUD modals
-│   └── insights/     # Computed financial metrics and summaries
-└── utils/            # Helper functions (cn.js for class merging, etc.)
+│   ├── dashboard/    # Summary cards + charts
+│   ├── transactions/ # Search/filter/sort table + modal CRUD
+│   └── insights/     # Derived financial insights
+└── utils/            # Helper utilities (cn class merge helper)
 ```
 
 The project uses a **feature-based architecture** — each domain (dashboard, transactions, insights) is self-contained. Adding a new financial module is as simple as creating a new folder under `features/`.
@@ -125,6 +126,19 @@ Subtle route transitions and modal animations make the app feel thoughtfully cra
 
 **RBAC without a Backend**
 The Admin/Viewer toggle simulates real-world RBAC patterns entirely on the client side, demonstrating how access control logic can be cleanly decoupled from UI components using Context.
+
+---
+
+## Interview Quick Notes
+
+Use these short points if asked to explain the project quickly:
+
+- **Architecture:** Feature-based React app with Context API split by domain (`theme`, `role`, `transactions`, `toast`).
+- **State strategy:** `TransactionContext` is the source of truth; derived analytics are memoized with `useMemo`.
+- **RBAC behavior:** `Viewer` is read-only; `Admin` unlocks add/edit/delete UI actions.
+- **Charts:** Recharts line chart shows cumulative balance trend; pie chart shows expense distribution by category.
+- **UX details:** Motion transitions, glass cards, role badge, semantic colors, action toasts, empty states.
+- **Persistence:** `localStorage` keeps transactions/theme/role across refreshes with no backend dependency.
 
 ---
 

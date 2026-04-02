@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { RoleProvider } from './context/RoleContext';
 import { TransactionProvider } from './context/TransactionContext';
+import { ToastProvider } from './context/ToastContext';
 import { Layout } from './components/Layout';
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 
 import DashboardOverview from './features/dashboard/DashboardOverview';
@@ -47,10 +49,12 @@ function App() {
   return (
     <ThemeProvider>
       <RoleProvider>
-        <TransactionProvider>
-          <AnimatedBackground />
-          <AppContent />
-        </TransactionProvider>
+        <ToastProvider>
+          <TransactionProvider>
+            <AnimatedBackground />
+            <AppContent />
+          </TransactionProvider>
+        </ToastProvider>
       </RoleProvider>
     </ThemeProvider>
   );
