@@ -5,14 +5,21 @@ import { useRole } from './RoleContext';
 
 const TransactionContext = createContext();
 
+/**
+ * TransactionProvider — source of truth for all transaction data.
+ * Persists to localStorage so data survives page reloads.
+ * CRUD operations are gated by role — Viewer mode blocks mutations with a toast.
+ */
 export function TransactionProvider({ children }) {
   const { showToast } = useToast();
   const { isAdmin } = useRole();
+
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('finance-dashboard-transactions');
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
   });
 
+  // Sync transactions to localStorage on every change
   useEffect(() => {
     localStorage.setItem('finance-dashboard-transactions', JSON.stringify(transactions));
   }, [transactions]);
@@ -22,7 +29,7 @@ export function TransactionProvider({ children }) {
       showToast('Viewer mode is read-only', 'error');
       return;
     }
-    setTransactions(prev => [{ ...transaction, id: Date.now().toString() }, ...prev]);
+    setTransactions((prev) => [{ ...transaction, id: Date.now().toString() }, ...prev]);
     showToast('Transaction added', 'success');
   };
 
@@ -31,7 +38,7 @@ export function TransactionProvider({ children }) {
       showToast('Viewer mode is read-only', 'error');
       return;
     }
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updated } : t));
+    setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updated } : t)));
     showToast('Transaction updated', 'info');
   };
 
@@ -40,7 +47,7 @@ export function TransactionProvider({ children }) {
       showToast('Viewer mode is read-only', 'error');
       return;
     }
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
     showToast('Transaction deleted', 'error');
   };
 
@@ -51,5 +58,4 @@ export function TransactionProvider({ children }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTransactions = () => useContext(TransactionContext);

@@ -2,12 +2,17 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
+/**
+ * ThemeProvider — manages dark/light mode with localStorage persistence.
+ * Defaults to the user's OS preference if no saved preference exists.
+ */
 export function ThemeProvider({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('finance-dashboard-theme');
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
+  // Sync dark class on <html> and persist to localStorage
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -18,7 +23,7 @@ export function ThemeProvider({ children }) {
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => setIsDarkMode(prev => !prev);
+  const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
@@ -27,5 +32,4 @@ export function ThemeProvider({ children }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => useContext(ThemeContext);

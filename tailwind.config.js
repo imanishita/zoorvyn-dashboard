@@ -7,26 +7,29 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Sora', 'system-ui', 'sans-serif'],
+      },
       colors: {
         brand: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981', // emerald-500
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
         },
         dark: {
-          bg: '#0f172a',    // slate-900 
-          card: '#1e293b',  // slate-800
-          border: '#334155',// slate-700
-        }
-      }
+          bg:     '#020617',
+          card:   '#0f172a',
+          border: '#1e293b',
+        },
+      },
     },
   },
   plugins: [],
-}
+};

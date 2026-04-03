@@ -2,6 +2,10 @@ import { useMemo } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { TrendingUp, AlertCircle, Award, CalendarClock } from 'lucide-react';
 
+/**
+ * Insights panel — derived financial analytics computed from raw transactions.
+ * All metrics are memoized and recalculated only when transactions change.
+ */
 export default function InsightsPanel() {
   const { transactions } = useTransactions();
 
@@ -14,14 +18,15 @@ export default function InsightsPanel() {
     let largestExpense = null;
     const monthTotals = {};
 
-    transactions.forEach(t => {
+    transactions.forEach((t) => {
       const amt = Number(t.amount);
+
       if (t.type === 'Income') {
         totalIncome += amt;
       } else {
         totalExpense += amt;
         expenseCategories[t.category] = (expenseCategories[t.category] || 0) + amt;
-        
+
         if (!largestExpense || amt > Number(largestExpense.amount)) {
           largestExpense = t;
         }
@@ -38,8 +43,10 @@ export default function InsightsPanel() {
       }
     });
 
-    const highestCategory = Object.entries(expenseCategories).sort((a,b) => b[1] - a[1])[0];
+    const highestCategory = Object.entries(expenseCategories).sort((a, b) => b[1] - a[1])[0];
     const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
+
+    // Month-over-month comparison
     const months = Object.keys(monthTotals).sort();
     const currentMonth = months[months.length - 1];
     const previousMonth = months[months.length - 2];
@@ -48,16 +55,40 @@ export default function InsightsPanel() {
     const monthlyComparison =
       previousExpense > 0 ? ((currentExpense - previousExpense) / previousExpense) * 100 : 0;
 
-    const topCategoryShare = highestCategory && totalExpense > 0 ? (highestCategory[1] / totalExpense) * 100 : 0;
-    let simpleInsight = 'Track expenses for a second month to unlock monthly comparison.';
+    const topCategoryShare =
+      highestCategory && totalExpense > 0 ? (highestCategory[1] / totalExpense) * 100 : 0;
+
+    // Headline text generation
+    const headlineSpend =
+      previousExpense > 0
+        ? monthlyComparison >= 0
+          ? `You spent ${Math.abs(monthlyComparison).toFixed(0)}% more than last month.`
+          : `You spent ${Math.abs(monthlyComparison).toFixed(0)}% less than last month.`
+        : 'Add another month of expenses to compare against last month.';
+
+    const topCategoryHeadline = highestCategory
+      ? `Top category: ${highestCategory[0]}`
+      : 'Top category: —';
+
+    let detailInsight = 'Track a second month to unlock a month-over-month story for your spending.';
     if (highestCategory && previousExpense > 0) {
-      const direction = monthlyComparison >= 0 ? 'more' : 'less';
-      simpleInsight = `You spent ${Math.abs(monthlyComparison).toFixed(0)}% ${direction} this month. ${highestCategory[0]} alone is ${topCategoryShare.toFixed(0)}% of total expenses.`;
+      detailInsight = `${highestCategory[0]} represents ${topCategoryShare.toFixed(0)}% of all spending so far — worth watching if you need to cut back.`;
     } else if (highestCategory) {
-      simpleInsight = `Top spending category is ${highestCategory[0]} (${topCategoryShare.toFixed(0)}% of your expense mix).`;
+      detailInsight = `${highestCategory[0]} is your biggest expense bucket (${topCategoryShare.toFixed(0)}% of expenses).`;
     }
 
-    return { totalIncome, totalExpense, highestCategory, largestExpense, savingsRate, monthlyComparison, simpleInsight, topCategoryShare };
+    return {
+      totalIncome,
+      totalExpense,
+      highestCategory,
+      largestExpense,
+      savingsRate,
+      monthlyComparison,
+      detailInsight,
+      topCategoryShare,
+      headlineSpend,
+      topCategoryHeadline,
+    };
   }, [transactions]);
 
   if (!insights) {
@@ -70,11 +101,22 @@ export default function InsightsPanel() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">Financial Insights</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <h2 className="mb-4 text-xl font-bold text-slate-900 dark:text-white sm:mb-6 sm:text-2xl">Financial Insights</h2>
+
+      {/* Headline insight card */}
+      <div className="glass space-y-3 rounded-2xl p-5 shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:shadow-xl dark:ring-white/10 sm:p-6">
+        <p className="text-lg font-bold leading-snug text-slate-900 dark:text-white sm:text-xl">
+          {insights.headlineSpend}
+        </p>
+        <p className="text-base font-semibold text-brand-600 dark:text-brand-400">{insights.topCategoryHeadline}</p>
+        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{insights.detailInsight}</p>
+      </div>
+
+      {/* Metric cards grid */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+
         {/* Savings Rate */}
-        <div className="glass p-5 sm:p-6 rounded-2xl flex items-start gap-3 sm:gap-4 shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+        <div className="glass flex items-start gap-3 rounded-2xl p-5 shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl dark:ring-white/10 sm:gap-4 sm:p-6">
           <div className="p-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-xl flex-shrink-0">
             <TrendingUp className="w-6 h-6" />
           </div>
@@ -84,17 +126,17 @@ export default function InsightsPanel() {
               {insights.savingsRate.toFixed(1)}%
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {insights.savingsRate >= 20 
-                ? "Excellent! You are saving a healthy portion of your income." 
-                : insights.savingsRate > 0 
-                  ? "You are saving, but there might be room for optimization." 
-                  : "You are spending more than you earn. Review expenses."}
+              {insights.savingsRate >= 20
+                ? 'Excellent! You are saving a healthy portion of your income.'
+                : insights.savingsRate > 0
+                  ? 'You are saving, but there might be room for optimization.'
+                  : 'You are spending more than you earn. Review expenses.'}
             </p>
           </div>
         </div>
 
-        {/* Highest Category */}
-        <div className="glass p-5 sm:p-6 rounded-2xl flex items-start gap-3 sm:gap-4 shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+        {/* Highest Spending Category */}
+        <div className="glass flex items-start gap-3 rounded-2xl p-5 shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl dark:ring-white/10 sm:gap-4 sm:p-6">
           <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex-shrink-0">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -104,15 +146,15 @@ export default function InsightsPanel() {
               {insights.highestCategory ? insights.highestCategory[0] : 'N/A'}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {insights.highestCategory 
+              {insights.highestCategory
                 ? `Totalling ₹${insights.highestCategory[1].toLocaleString('en-IN')} this period.`
-                : "No expenses recorded yet."}
+                : 'No expenses recorded yet.'}
             </p>
           </div>
         </div>
 
-        {/* Largest Transaction */}
-        <div className="glass p-5 sm:p-6 rounded-2xl flex items-start gap-3 sm:gap-4 md:col-span-2 shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+        {/* Largest Single Expense */}
+        <div className="glass flex items-start gap-3 rounded-2xl p-5 shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl dark:ring-white/10 sm:gap-4 sm:p-6 md:col-span-2">
           <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex-shrink-0">
             <Award className="w-6 h-6" />
           </div>
@@ -133,7 +175,8 @@ export default function InsightsPanel() {
           </div>
         </div>
 
-        <div className="glass p-5 sm:p-6 rounded-2xl flex items-start gap-3 sm:gap-4 md:col-span-2 shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+        {/* Monthly Comparison */}
+        <div className="glass flex items-start gap-3 rounded-2xl p-5 shadow-lg ring-1 ring-black/5 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl dark:ring-white/10 sm:gap-4 sm:p-6 md:col-span-2">
           <div className="p-3 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl flex-shrink-0">
             <CalendarClock className="w-6 h-6" />
           </div>
@@ -143,10 +186,9 @@ export default function InsightsPanel() {
               {insights.monthlyComparison >= 0 ? '+' : ''}
               {insights.monthlyComparison.toFixed(1)}%
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{insights.simpleInsight}</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{insights.detailInsight}</p>
           </div>
         </div>
-
       </div>
     </div>
   );

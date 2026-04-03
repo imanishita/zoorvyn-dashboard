@@ -3,26 +3,28 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-gray-50 text-slate-900 transition-colors duration-300;
+  html {
+    @apply min-h-full;
   }
-  
+
+  body {
+    @apply min-h-full bg-transparent text-slate-900 transition-colors duration-300;
+  }
+
   .dark body {
-    @apply bg-dark-bg text-slate-100;
+    @apply text-slate-100;
+  }
+
+  #root {
+    @apply min-h-full;
   }
 }
 
+/* Slow-drifting background animation for gradient orbs */
 @keyframes bg-gradient-drift {
-  0%,
-  100% {
-    transform: translate(0%, 0%) rotate(0deg) scale(1);
-  }
-  33% {
-    transform: translate(3%, -2%) rotate(2deg) scale(1.03);
-  }
-  66% {
-    transform: translate(-2%, 3%) rotate(-1deg) scale(0.98);
-  }
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+  33%      { transform: translate(3%, -2%) rotate(2deg) scale(1.03); }
+  66%      { transform: translate(-2%, 3%) rotate(-1deg) scale(0.98); }
 }
 
 @layer utilities {
@@ -34,31 +36,30 @@
     animation: bg-gradient-drift 38s ease-in-out infinite reverse;
   }
 
+  /* Glassmorphism utility — frosted-glass card effect */
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm dark:bg-dark-card/70 dark:border-white/10 dark:shadow-none;
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm
+           dark:bg-dark-card/70 dark:border-white/10 dark:shadow-none;
   }
 
+  /* Custom slim scrollbar with brand gradient thumb */
   .cool-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+    scrollbar-color: rgba(59, 130, 246, 0.35) transparent;
   }
-
   .cool-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
-
   .cool-scrollbar::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 9999px;
   }
-
   .cool-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.5), rgba(56, 189, 248, 0.45));
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.5), rgba(99, 102, 241, 0.45));
     border-radius: 9999px;
     border: 1px solid rgba(255, 255, 255, 0.25);
   }
-
   .cool-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.75), rgba(56, 189, 248, 0.65));
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.75), rgba(99, 102, 241, 0.65));
   }
 }

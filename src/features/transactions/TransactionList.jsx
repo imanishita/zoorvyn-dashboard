@@ -6,47 +6,58 @@ import { cn } from '../../utils/cn';
 import TransactionModal from './TransactionModal';
 import { CATEGORIES } from '../../data/mockData';
 
+/** All unique categories across income and expense — used for the filter dropdown. */
+const ALL_CATEGORIES = [...new Set([...CATEGORIES.Expense, ...CATEGORIES.Income])];
+
+/**
+ * Transaction list view — searchable, filterable, sortable table.
+ * Admin mode unlocks add/edit/delete actions; Viewer mode is read-only.
+ */
 export default function TransactionList() {
   const { transactions, deleteTransaction } = useTransactions();
   const { isAdmin } = useRole();
 
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('All'); // All, Income, Expense
+  const [filterType, setFilterType] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
 
+  /** Toggle sort direction, or switch to a new sort key. */
   const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
     setSortConfig({ key, direction });
   };
 
+  /** Derived list — filtered by search/type/category, then sorted by sortConfig. */
   const filteredAndSorted = useMemo(() => {
     let result = [...transactions];
 
+    // Text search
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(t => 
-        t.description.toLowerCase().includes(q) || 
-        t.category.toLowerCase().includes(q)
+      result = result.filter((t) =>
+        t.description.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
       );
     }
 
+    // Type filter
     if (filterType !== 'All') {
-      result = result.filter(t => t.type === filterType);
+      result = result.filter((t) => t.type === filterType);
     }
 
+    // Category filter
     if (filterCategory !== 'All') {
       result = result.filter((t) => t.category === filterCategory);
     }
 
+    // Sort
     result.sort((a, b) => {
       let valA = a[sortConfig.key];
       let valB = b[sortConfig.key];
-      
+
       if (sortConfig.key === 'amount') {
         valA = Number(valA);
         valB = Number(valB);
@@ -63,81 +74,78 @@ export default function TransactionList() {
     return result;
   }, [transactions, search, filterType, filterCategory, sortConfig]);
 
-  const openAddModal = () => {
-    setEditingTx(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (tx) => {
-    setEditingTx(tx);
-    setIsModalOpen(true);
-  };
+  const openAddModal = () => { setEditingTx(null); setIsModalOpen(true); };
+  const openEditModal = (tx) => { setEditingTx(tx); setIsModalOpen(true); };
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h2>
         {isAdmin && (
-          <button 
+          <button
             onClick={openAddModal}
-            className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl transition-all duration-200 font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5"
+            className="flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 font-medium text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             Add Transaction
           </button>
         )}
       </div>
+
       {!isAdmin && (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Viewer mode is read-only. Switch to Admin to add or edit entries.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Viewer mode is read-only. Switch to Admin to add or edit entries.
+        </p>
       )}
 
-      {/* Filters and Search */}
+      {/* ─── Filters ─── */}
       <div className="glass p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="relative w-full lg:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search descriptions or categories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
           />
         </div>
-        
+
         <div className="flex flex-col md:flex-row gap-3 w-full lg:w-auto">
+          {/* Type toggle */}
           <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto">
-            {['All', 'Income', 'Expense'].map(type => (
+            {['All', 'Income', 'Expense'].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
                 className={cn(
-                  "flex-1 md:px-6 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  filterType === type 
-                    ? "bg-white dark:bg-slate-700 shadow-sm text-brand-600 dark:text-brand-400" 
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  'flex-1 rounded-lg py-1.5 text-sm font-medium transition-all duration-200 md:px-6',
+                  filterType === type
+                    ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-400'
+                    : 'text-gray-500 hover:text-brand-600 dark:text-gray-400 dark:hover:text-brand-300'
                 )}
               >
                 {type}
               </button>
             ))}
           </div>
+
+          {/* Category dropdown */}
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
             className="w-full md:w-52 px-3 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="All">All Categories</option>
-            {[...new Set([...CATEGORIES.Expense, ...CATEGORIES.Income])].map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
+            {ALL_CATEGORIES.map((category) => (
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Table */}
+      {/* ─── Table ─── */}
       <div className="glass rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -160,13 +168,13 @@ export default function TransactionList() {
             </thead>
             <tbody>
               {filteredAndSorted.length > 0 ? (
-                filteredAndSorted.map(tx => (
+                filteredAndSorted.map((tx) => (
                   <tr
                     key={tx.id}
                     className={cn(
                       'border-b border-gray-100 dark:border-slate-800 last:border-0 transition-colors',
                       tx.type === 'Income'
-                        ? 'bg-emerald-50/30 hover:bg-emerald-50/60 dark:bg-emerald-900/10 dark:hover:bg-emerald-900/20'
+                        ? 'bg-brand-50/30 hover:bg-brand-50/60 dark:bg-brand-900/10 dark:hover:bg-brand-900/20'
                         : 'bg-red-50/20 hover:bg-red-50/50 dark:bg-red-900/10 dark:hover:bg-red-900/20'
                     )}
                   >
@@ -177,13 +185,11 @@ export default function TransactionList() {
                       {tx.description}
                     </td>
                     <td className="px-3 sm:px-6 py-4 text-sm text-slate-600 dark:text-gray-300">
-                      <span className="bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-md text-xs">
-                        {tx.category}
-                      </span>
+                      <span className="bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-md text-xs">{tx.category}</span>
                     </td>
                     <td className={cn(
-                      "px-3 sm:px-6 py-4 text-sm font-semibold whitespace-nowrap",
-                      tx.type === 'Income' ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-300"
+                      'px-3 sm:px-6 py-4 text-sm font-semibold whitespace-nowrap',
+                      tx.type === 'Income' ? 'text-brand-600 dark:text-brand-400' : 'text-red-600 dark:text-red-300'
                     )}>
                       {tx.type === 'Income' ? '+' : '-'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
@@ -213,8 +219,9 @@ export default function TransactionList() {
         </div>
       </div>
 
+      {/* Add/Edit modal */}
       {isModalOpen && (
-        <TransactionModal 
+        <TransactionModal
           initialData={editingTx}
           onClose={() => setIsModalOpen(false)}
         />
