@@ -133,21 +133,6 @@ The Admin/Viewer toggle simulates real-world RBAC patterns entirely on the clien
 The sidebar switches between horizontal tabs (mobile/tablet) and a vertical sidebar (desktop) via Tailwind's `lg:` breakpoint, giving cards maximum room at every viewport size.
 
 ---
-
-## Interview Quick Notes
-
-Use these short points if asked to explain the project quickly:
-
-- **Architecture:** Feature-based React app with Context API split by domain (`theme`, `role`, `transactions`, `toast`).
-- **State strategy:** `TransactionContext` is the source of truth; derived analytics are memoized with `useMemo`.
-- **RBAC behavior:** `Viewer` is read-only; `Admin` unlocks add/edit/delete UI actions.
-- **Charts:** Recharts line chart shows cumulative balance trend; pie chart shows expense distribution by category.
-- **UX details:** Motion transitions, glass cards, role badge, semantic colors, action toasts, empty states.
-- **Persistence:** `localStorage` keeps transactions/theme/role across refreshes with no backend dependency.
-- **Responsiveness:** Mobile-first grid with `sm:grid-cols-2` → `lg:grid-cols-3`, sidebar at `lg:` only.
-
----
-
 ## License
 
 This project was built as part of a frontend internship assignment. Feel free to explore the code.
