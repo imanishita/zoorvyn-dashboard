@@ -43,11 +43,11 @@
 ### Transactions & Dropdown Filter
 ![Transactions Dropdown](ui/Dropdown.png)
 
+### Transactions View
+![Transaction](ui/Transaction.png)
+
 ### Insights Panel
 ![Insights](ui/Insights.png)
-
-### Transactions View
-![Transactions](ui/Transaction.png)
 
 ---
 
