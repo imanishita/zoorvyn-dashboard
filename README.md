@@ -44,7 +44,7 @@
 ![Transactions Dropdown](ui/Dropdown.png)
 
 ### Transactions View
-![Transaction](ui/Transaction.png)
+![Transaction](ui/Transcation.png)
 
 ### Insights Panel
 ![Insights](ui/Insights.png)
