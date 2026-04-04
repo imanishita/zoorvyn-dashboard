@@ -2,27 +2,26 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { INITIAL_TRANSACTIONS } from '../data/mockData';
 import { useToast } from './ToastContext';
 import { useRole } from './RoleContext';
+import { can } from '../utils/permissions';
 
 const TransactionContext = createContext();
 
-
 export function TransactionProvider({ children }) {
   const { showToast } = useToast();
-  const { isAdmin } = useRole();
+  const { role } = useRole();
 
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('finance-dashboard-transactions');
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
   });
 
-  // Sync transactions to localStorage on every change
   useEffect(() => {
     localStorage.setItem('finance-dashboard-transactions', JSON.stringify(transactions));
   }, [transactions]);
 
   const addTransaction = (transaction) => {
-    if (!isAdmin) {
-      showToast('Viewer mode is read-only', 'error');
+    if (!can(role, 'transaction:create')) {
+      showToast('You don\'t have permission to add transactions', 'error');
       return;
     }
     setTransactions((prev) => [{ ...transaction, id: Date.now().toString() }, ...prev]);
@@ -30,8 +29,8 @@ export function TransactionProvider({ children }) {
   };
 
   const editTransaction = (id, updated) => {
-    if (!isAdmin) {
-      showToast('Viewer mode is read-only', 'error');
+    if (!can(role, 'transaction:edit')) {
+      showToast('You don\'t have permission to edit transactions', 'error');
       return;
     }
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updated } : t)));
@@ -39,8 +38,8 @@ export function TransactionProvider({ children }) {
   };
 
   const deleteTransaction = (id) => {
-    if (!isAdmin) {
-      showToast('Viewer mode is read-only', 'error');
+    if (!can(role, 'transaction:delete')) {
+      showToast('You don\'t have permission to delete transactions', 'error');
       return;
     }
     setTransactions((prev) => prev.filter((t) => t.id !== id));

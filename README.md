@@ -20,13 +20,13 @@
 
 ## TL;DR
 
-> A **glassmorphism-styled financial dashboard** with dark/light mode, role-based access control, interactive charts, and real data processing — not just a pretty UI.
+> A **glassmorphism-styled financial dashboard** with dark/light mode, explicit role-based access control, interactive charts, and real data processing — not just a pretty UI.
 
 **What makes this stand out:**
 
 - 🧠 **Real logic** — `map`, `filter`, `sort`, and `reduce` pipelines process transactions into charts, insights, and trends
 - ♻️ **Reusable components** — `StatCard`, `GlassCard`, and `EmptyState` are generic, prop-driven, and shared across features
-- 🔒 **Client-side RBAC** — Admin/Viewer toggle gates all mutations via Context, demonstrating clean access control patterns
+- 🔒 **Explicit RBAC** — Permission-based access control with `ProtectedAction` components and centralized permission mapping
 - 📊 **Derived analytics** — savings rate, month-over-month trends, top spending category — all memoized and recomputed on data change
 - 💾 **Persistent state** — transactions, theme, and role survive page reloads via `localStorage`
 
@@ -57,8 +57,9 @@
 |---|---|
 | **Dashboard Overview** | Gradient summary cards (`StatCard`) with trend badges, semantic color coding, and responsive grid layout. |
 | **Charts (Recharts)** | `Line`: Cumulative balance over time. `Pie`: Expense category breakdown with custom scrollable legend. |
-| **Transaction Management** | Search, filter (`All/Income/Expense` + category), sort (`date/amount`), result count badge, and admin-only CRUD. |
-| **Role-Based UI (RBAC)** | Toggle between `Viewer` (read-only) and `Admin`. Admin can add/edit/delete; Viewer can explore data safely. |
+| **Transaction Management** | Search, filter (`All/Income/Expense` + category), sort (`date/amount`), result count badge, and permission-gated CRUD. |
+| **Explicit RBAC** | `ProtectedAction` wrapper components + centralized permissions map. Roles defined as data, not scattered logic. |
+| **Role Status Badge** | Visual indicator showing current role and available permissions at a glance. |
 | **Insights Engine** | Computes top spending category, monthly comparison, savings rate, and generates human-readable insight sentences. |
 | **Toasts / Snackbar** | Global feedback on key actions (`Transaction added/updated/deleted`, role changes, theme toggles). |
 | **Persistence** | Transactions, theme, and role are synced to `localStorage` — experience persists across reloads. |
@@ -107,10 +108,39 @@ All analytics are computed using `useMemo` — recalculated **only** when the tr
 ThemeProvider       → Dark/light mode + localStorage sync
   └─ RoleProvider   → Admin/Viewer role + mutation guards
       └─ ToastProvider → Global notification queue
-          └─ TransactionProvider → CRUD ops + localStorage persistence
+          └─ TransactionProvider → CRUD ops + RBAC-gated mutations
 ```
 
 Order matters: `TransactionContext` depends on both `ToastContext` (for feedback) and `RoleContext` (for RBAC guards).
+
+### RBAC Architecture
+
+**Explicit permissions system** — permissions are declared as data structures rather than scattered boolean logic:
+
+```javascript
+// src/utils/permissions.js
+export const PERMISSIONS = {
+  Admin: ['transaction:create', 'transaction:edit', 'transaction:delete', 'transaction:view'],
+  Viewer: ['transaction:view', 'insights:view', 'dashboard:view'],
+};
+
+export function can(role, action) {
+  return PERMISSIONS[role]?.includes(action) ?? false;
+}
+```
+
+**Component-level protection** via `ProtectedAction` wrapper:
+```jsx
+<ProtectedAction action="transaction:create">
+  <button>Add Transaction</button>
+</ProtectedAction>
+```
+
+**Context-level guards** using centralized permission checks:
+```javascript
+// Instead of: if (!isAdmin) { ... }
+// Now: if (!can(role, 'transaction:create')) { ... }
+```
 
 ---
 
@@ -123,11 +153,21 @@ These are **generic, prop-driven components** shared across multiple features �
 | `StatCard` | `title`, `amount`, `icon`, `variant` (`primary`/`success`/`danger`), `trend`, `trendLabel`, `invertTrend` | Dashboard (3 summary cards) |
 | `GlassCard` | `children`, `className`, `hover`, `as` | Dashboard, Transactions, Insights (10+ instances) |
 | `EmptyState` | `icon`, `title`, `description`, `action` | Dashboard, Transactions, Insights (zero-data states) |
+| `ProtectedAction` | `action`, `children`, `fallback` | Transaction buttons, UI controls (RBAC gating) |
+| `RoleBadge` | None | Transactions page (role status display) |
 
 Example — rendering a stat card is a single line:
 
 ```jsx
 <StatCard title="Total Balance" amount={3200} icon={Wallet} variant="primary" trend={12.5} />
+```
+
+Example — protecting an action with RBAC:
+
+```jsx
+<ProtectedAction action="transaction:delete">
+  <button>Delete Transaction</button>
+</ProtectedAction>
 ```
 
 ---
@@ -162,13 +202,15 @@ src/
 │   ├── StatCard.jsx      # Metric card with trend badge (3 variants)
 │   ├── GlassCard.jsx     # Frosted-glass container wrapper
 │   ├── EmptyState.jsx    # Zero-data placeholder with icon + CTA
+│   ├── ProtectedAction.jsx # RBAC wrapper component
+│   ├── RoleBadge.jsx     # Role status display component
 │   ├── Layout.jsx        # App shell — navbar, sidebar, toast
 │   └── AnimatedBackground.jsx
 ├── context/              # Global state providers
 │   ├── ThemeContext.jsx   # Dark/light mode + localStorage
 │   ├── RoleContext.jsx    # Admin/Viewer RBAC
 │   ├── ToastContext.jsx   # Global notification queue
-│   └── TransactionContext.jsx  # CRUD + persistence
+│   └── TransactionContext.jsx  # CRUD + RBAC-protected mutations
 ├── data/
 │   └── mockData.js       # Seed transactions + category config
 ├── features/
@@ -178,6 +220,7 @@ src/
 └── utils/
     ├── cn.js             # Tailwind class merge (clsx + twMerge)
     ├── formatCurrency.js # ₹ formatter with Indian numbering
+    ├── permissions.js    # Centralized RBAC permission mapping
     ├── roleUi.js         # RBAC constants + helpers
     └── transactionHelpers.js  # Pure data-processing functions
 ```
@@ -200,8 +243,8 @@ Transaction computations live in `transactionHelpers.js` — pure functions with
 **Framer Motion for Premium Feel**
 Subtle route transitions, staggered card entries, and modal animations make the app feel thoughtfully crafted. The animations are intentionally restrained — they enhance, not distract.
 
-**RBAC without a Backend**
-The Admin/Viewer toggle simulates real-world RBAC patterns entirely on the client side, demonstrating how access control logic can be cleanly decoupled from UI components using Context.
+**Explicit RBAC over Boolean Checks**
+Rather than scattering `isAdmin` checks throughout the codebase, permissions are declared as data in `permissions.js`. The `can(role, action)` function and `ProtectedAction` component create a clean abstraction layer that mirrors real-world authorization systems (AWS IAM, Firebase Rules). Adding a new role or changing permissions requires editing only the permissions map, not grep-and-replace across components.
 
 **Responsive-First Layout**
 The sidebar switches between horizontal tabs (mobile/tablet) and a vertical sidebar (desktop) via Tailwind's `lg:` breakpoint, giving cards maximum room at every viewport size.
@@ -212,22 +255,24 @@ The sidebar switches between horizontal tabs (mobile/tablet) and a vertical side
 
 ### What I Built
 
-A complete, polished financial dashboard that goes past layout into **real frontend engineering** — data pipelines, state architecture, role-based access, and derived analytics.
+A complete, polished financial dashboard that goes past layout into **real frontend engineering** — data pipelines, state architecture, explicit role-based access control, and derived analytics.
 
 ### Technical Skills Demonstrated
 
 - **State management** — 4 domain-specific Context providers with clear dependency ordering
 - **Data processing** — `reduce`, `filter`, `sort`, and `map` chains for chart data, trends, and insights
-- **Component design** — Generic, prop-driven components (`StatCard`, `GlassCard`, `EmptyState`) reused across features
+- **Component design** — Generic, prop-driven components (`StatCard`, `GlassCard`, `ProtectedAction`) reused across features
+- **RBAC architecture** — Centralized permission mapping with component-level and context-level guards
 - **Performance** — `useMemo` for all derived computations; no unnecessary re-renders
-- **UX attention** — Empty states, loading feedback, toast notifications, keyboard-accessible focus rings
+- **UX attention** — Empty states, loading feedback, toast notifications, role status indicators
 - **Persistence** — `localStorage` sync for transactions, theme, and role without a backend
 
 ### What I'd Improve Next
 
-- Add unit tests for `transactionHelpers.js` with Jest
+- Add unit tests for `transactionHelpers.js` and `permissions.js` with Jest
 - Implement a budget-setting feature with progress bars
 - Add CSV export for transaction data
+- Extend RBAC with time-based or resource-scoped permissions
 - Deploy to Vercel with CI/CD pipeline
 
 ---

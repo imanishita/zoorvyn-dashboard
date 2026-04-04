@@ -1,21 +1,25 @@
 import { useState, useMemo } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { useRole } from '../../context/RoleContext';
+import { can } from '../../utils/permissions';
 import { Search, Plus, Trash2, Edit2, ArrowUpDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import TransactionModal from './TransactionModal';
 import { CATEGORIES } from '../../data/mockData';
+import ProtectedAction from '../../components/ProtectedAction';
+import RoleBadge from '../../components/RoleBadge';
 
 /** All unique categories across income and expense — used for the filter dropdown. */
 const ALL_CATEGORIES = [...new Set([...CATEGORIES.Expense, ...CATEGORIES.Income])];
 
 /**
  * Transaction list view — searchable, filterable, sortable table.
- * Admin mode unlocks add/edit/delete actions; Viewer mode is read-only.
+ * Mutations (add/edit/delete) are gated by ProtectedAction using explicit
+ * RBAC permissions from src/utils/permissions.js.
  */
 export default function TransactionList() {
   const { transactions, deleteTransaction } = useTransactions();
-  const { isAdmin } = useRole();
+  const { role } = useRole();
 
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -24,6 +28,12 @@ export default function TransactionList() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
+
+  const canCreate = can(role, 'transaction:create');
+  const canEdit = can(role, 'transaction:edit');
+  const canDelete = can(role, 'transaction:delete');
+  // Whether the Actions column should appear at all
+  const showActions = canEdit || canDelete;
 
   /** Toggle sort direction, or switch to a new sort key. */
   const handleSort = (key) => {
@@ -35,7 +45,6 @@ export default function TransactionList() {
   const filteredAndSorted = useMemo(() => {
     let result = [...transactions];
 
-    // Text search
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((t) =>
@@ -43,17 +52,14 @@ export default function TransactionList() {
       );
     }
 
-    // Type filter
     if (filterType !== 'All') {
       result = result.filter((t) => t.type === filterType);
     }
 
-    // Category filter
     if (filterCategory !== 'All') {
       result = result.filter((t) => t.category === filterCategory);
     }
 
-    // Sort
     result.sort((a, b) => {
       let valA = a[sortConfig.key];
       let valB = b[sortConfig.key];
@@ -82,7 +88,9 @@ export default function TransactionList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h2>
-        {isAdmin && (
+
+        {/* Add button — only rendered when role has create permission */}
+        <ProtectedAction action="transaction:create">
           <button
             onClick={openAddModal}
             className="flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 font-medium text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg active:scale-[0.98]"
@@ -90,14 +98,11 @@ export default function TransactionList() {
             <Plus className="w-4 h-4" />
             Add Transaction
           </button>
-        )}
+        </ProtectedAction>
       </div>
 
-      {!isAdmin && (
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Viewer mode is read-only. Switch to Admin to add or edit entries.
-        </p>
-      )}
+      {/* Role badge — makes RBAC visible at a glance */}
+      <RoleBadge />
 
       {/* ─── Filters ─── */}
       <div className="glass p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
@@ -163,7 +168,10 @@ export default function TransactionList() {
                     Amount <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
-                {isAdmin && <th className="px-3 sm:px-6 py-4 text-sm font-semibold text-right text-gray-500 dark:text-gray-400">Actions</th>}
+                {/* Actions column only rendered when role has at least one mutation permission */}
+                {showActions && (
+                  <th className="px-3 sm:px-6 py-4 text-sm font-semibold text-right text-gray-500 dark:text-gray-400">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -193,15 +201,30 @@ export default function TransactionList() {
                     )}>
                       {tx.type === 'Income' ? '+' : '-'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
-                    {isAdmin && (
+
+                    {showActions && (
                       <td className="px-3 sm:px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => openEditModal(tx)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => deleteTransaction(tx.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {/* Each button individually gated — supports future roles that can delete but not edit */}
+                          <ProtectedAction action="transaction:edit">
+                            <button
+                              onClick={() => openEditModal(tx)}
+                              className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                              title="Edit transaction"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          </ProtectedAction>
+
+                          <ProtectedAction action="transaction:delete">
+                            <button
+                              onClick={() => deleteTransaction(tx.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                              title="Delete transaction"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </ProtectedAction>
                         </div>
                       </td>
                     )}
@@ -209,8 +232,9 @@ export default function TransactionList() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={isAdmin ? 5 : 4} className="px-3 sm:px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                    No transactions found. Try changing search/filter values or add a new transaction.
+                  <td colSpan={showActions ? 5 : 4} className="px-3 sm:px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    No transactions found. Try changing search/filter values
+                    {canCreate && ' or add a new transaction'}.
                   </td>
                 </tr>
               )}
