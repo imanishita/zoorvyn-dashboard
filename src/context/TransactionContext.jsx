@@ -5,11 +5,7 @@ import { useRole } from './RoleContext';
 
 const TransactionContext = createContext();
 
-/**
- * TransactionProvider — source of truth for all transaction data.
- * Persists to localStorage so data survives page reloads.
- * CRUD operations are gated by role — Viewer mode blocks mutations with a toast.
- */
+
 export function TransactionProvider({ children }) {
   const { showToast } = useToast();
   const { isAdmin } = useRole();

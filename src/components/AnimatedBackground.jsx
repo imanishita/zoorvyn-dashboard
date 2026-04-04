@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 
-/** Shared transition config for drifting orbs — keeps all orbs in sync. */
 const orbTransition = {
   duration: 22,
   repeat: Infinity,
@@ -19,7 +18,7 @@ export default function AnimatedBackground() {
       {/* Base wash — light: soft blue/sky tint; dark: deep navy matching zorvyn.io */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50/40 to-sky-50/30 dark:from-dark-bg dark:via-slate-900 dark:to-slate-950 transition-colors duration-500" />
 
-      {/* Large drifting gradient blobs — CSS animation keeps GPU-friendly */}
+      {/* Large drifting gradient blobs */}
       <div className="absolute -left-1/4 top-0 h-[70vh] w-[70vw] rounded-full bg-gradient-to-br from-blue-200/40 via-indigo-100/30 to-transparent blur-3xl dark:from-blue-500/20 dark:via-indigo-600/15 dark:to-transparent animate-bg-drift" />
       <div className="absolute -right-1/4 bottom-0 h-[65vh] w-[65vw] rounded-full bg-gradient-to-tl from-indigo-200/35 via-violet-100/25 to-transparent blur-3xl dark:from-indigo-500/25 dark:via-violet-600/15 dark:to-transparent animate-bg-drift-slow" />
 

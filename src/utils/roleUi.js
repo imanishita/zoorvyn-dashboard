@@ -1,6 +1,5 @@
 /**
- * Role constants and helpers — single source of truth for RBAC labels.
- * Used by Layout (role toggle, dropdown) and TransactionContext (mutation guards).
+ * Return user feedback message on role switch
  */
 export const ROLE = {
   viewer: 'Viewer',

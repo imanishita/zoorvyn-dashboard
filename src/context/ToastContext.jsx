@@ -2,11 +2,6 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 const ToastContext = createContext();
 
-/**
- * ToastProvider — global toast notification system.
- * showToast(message, type) displays a message for 2.8 seconds, then auto-dismisses.
- * Types: 'success' | 'error' | 'info'
- */
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
 

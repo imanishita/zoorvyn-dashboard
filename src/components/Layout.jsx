@@ -7,16 +7,15 @@ import { ROLE, roleSwitchToastMessage } from '../utils/roleUi';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 
-/** Sidebar navigation items — add new pages here. */
+/** Sidebar navigation items*/
 const NAV_ITEMS = [
-  { id: 'dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { id: 'insights',     label: 'Insights',     icon: PieChart },
+  { id: 'insights', label: 'Insights', icon: PieChart },
 ];
 
 /**
- * Main layout shell — navbar + sidebar + content area + toast overlay.
- * Receives currentTab/setCurrentTab to control navigation state.
+ * Main layout shell
  */
 export function Layout({ children, currentTab, setCurrentTab }) {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -36,7 +35,7 @@ export function Layout({ children, currentTab, setCurrentTab }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  /** Switch role and show toast feedback. */
+  /** Switch role  */
   const commitRole = (next) => {
     if (next === role) return;
     setRole(next);
@@ -50,7 +49,7 @@ export function Layout({ children, currentTab, setCurrentTab }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between items-center gap-2">
 
-            {/* Logo — branded Z mark with hover glow */}
+            {/* Logo */}
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-500 text-white text-lg font-bold shadow-md transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-brand-500/30">
               Z
             </div>
@@ -58,7 +57,7 @@ export function Layout({ children, currentTab, setCurrentTab }) {
             {/* ─── Action Bar ─── */}
             <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
 
-              {/* Role toggle — visible RBAC (Viewer = read-only, Admin = full access) */}
+              {/* Role toggle */}
               <div
                 className="flex items-center rounded-xl border border-gray-200/80 bg-gray-100/80 p-1 dark:border-slate-700/60 dark:bg-slate-800/80"
                 role="group"
@@ -163,10 +162,10 @@ export function Layout({ children, currentTab, setCurrentTab }) {
         </div>
       </header>
 
-      {/* ─── Body: Sidebar + Main Content ─── */}
+      {/* ─── Body*/}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow py-6 sm:py-8 flex flex-col lg:flex-row gap-6">
 
-        {/* Sidebar — horizontal tabs on mobile/tablet, vertical sidebar on lg+ */}
+        {/* Sidebar*/}
         <nav className="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 lg:w-52 flex-shrink-0">
           {NAV_ITEMS.map((item) => (
             <button
@@ -199,8 +198,8 @@ export function Layout({ children, currentTab, setCurrentTab }) {
             className={cn(
               'fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[100] max-w-[92vw] sm:max-w-none px-4 sm:px-6 py-3 rounded-full shadow-lg border text-xs sm:text-sm font-semibold tracking-wide backdrop-blur-md transition-colors text-center',
               toast.type === 'success' && 'border-brand-200/80 bg-brand-50/90 text-brand-700 dark:border-brand-800/80 dark:bg-brand-900/70 dark:text-brand-100',
-              toast.type === 'error'   && 'border-red-200/80 bg-red-50/90 text-red-700 dark:border-red-800/80 dark:bg-red-900/70 dark:text-red-100',
-              toast.type === 'info'    && 'border-white/20 dark:border-white/10 bg-white/80 text-slate-900 dark:bg-slate-800/80 dark:text-white'
+              toast.type === 'error' && 'border-red-200/80 bg-red-50/90 text-red-700 dark:border-red-800/80 dark:bg-red-900/70 dark:text-red-100',
+              toast.type === 'info' && 'border-white/20 dark:border-white/10 bg-white/80 text-slate-900 dark:bg-slate-800/80 dark:text-white'
             )}
           >
             {toast.message}

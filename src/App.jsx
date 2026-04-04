@@ -11,16 +11,16 @@ import AnimatedBackground from './components/AnimatedBackground';
 import TransactionList from './features/transactions/TransactionList';
 import InsightsPanel from './features/insights/InsightsPanel';
 
-/** Main content area — switches between tabs with animated transitions. */
+
 function AppContent() {
   const [currentTab, setCurrentTab] = useState('dashboard');
 
   const renderContent = () => {
     switch (currentTab) {
-      case 'dashboard':    return <DashboardOverview />;
+      case 'dashboard': return <DashboardOverview />;
       case 'transactions': return <TransactionList />;
-      case 'insights':     return <InsightsPanel />;
-      default:             return <DashboardOverview />;
+      case 'insights': return <InsightsPanel />;
+      default: return <DashboardOverview />;
     }
   };
 
@@ -41,11 +41,7 @@ function AppContent() {
   );
 }
 
-/**
- * Root component — wraps the app in context providers:
- *   Theme → Role → Toast → Transactions
- * Order matters: TransactionContext depends on Toast and Role.
- */
+
 function App() {
   return (
     <ThemeProvider>

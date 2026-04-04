@@ -4,7 +4,6 @@ const ThemeContext = createContext();
 
 /**
  * ThemeProvider — manages dark/light mode with localStorage persistence.
- * Defaults to the user's OS preference if no saved preference exists.
  */
 export function ThemeProvider({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -12,7 +11,7 @@ export function ThemeProvider({ children }) {
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  // Sync dark class on <html> and persist to localStorage
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
