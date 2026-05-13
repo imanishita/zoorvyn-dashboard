@@ -1,8 +1,16 @@
 <div align="center">
 
-<h1>
-  <img src="https://img.shields.io/badge/Zorvyn-Dashboard-3b82f6?style=for-the-badge&logoColor=white" alt="Zorvyn Dashboard" />
-</h1>
+<!-- Animated Header Wave -->
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=3b82f6&height=180&section=header&text=Zorvyn%20Dashboard&fontSize=52&fontColor=ffffff&fontAlignY=38&desc=Financial%20Dashboard%20·%20React%2019%20·%20Glassmorphism&descAlignY=62&descSize=18&animation=fadeIn" />
+
+<br/>
+
+<!-- Typing Banner -->
+<a href="https://git.io/typing-svg">
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=1000&color=3b82f6&center=true&vCenter=true&width=720&lines=Production-Ready+Financial+Dashboard;Dark+%2F+Light+Mode+%7C+Glassmorphism+UI;Role-Based+Access+Control+%7C+RBAC;Real+Data+Pipelines+%7C+Interactive+Charts;Built+for+Zorvyn+Frontend+Intern+Assignment" alt="Zorvyn Typing SVG" />
+</a>
+
+<br/><br/>
 
 <p><strong>A modern, production-ready financial dashboard — built for the Zorvyn Frontend Intern Assignment.</strong></p>
 
@@ -284,5 +292,12 @@ This project was built as part of a frontend internship assignment. Feel free to
 ---
 
 <div align="center">
-  <sub>Built with care by <strong>Manishita</strong></sub>
+
+<img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png" width="100%"/>
+
+<!-- Animated Footer Wave -->
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=3b82f6&height=120&section=footer&animation=fadeIn" />
+
+<sub>Built with care by <strong>Manishita</strong></sub>
+
 </div>
